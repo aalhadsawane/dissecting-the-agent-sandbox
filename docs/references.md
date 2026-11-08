@@ -54,3 +54,43 @@ V = primary page read this session · S = secondary/snippet only · U = not yet 
 - [S] m5zn.metal pricing (third-party): https://calculator.holori.com/aws/ec2/m5zn.metal/us-east-1
 - [S] c6g.metal pricing (third-party): https://calculator.holori.com/aws/ec2/c6g.metal/us-east-1
 - [S] AWS Academy Learner Lab restrictions (course copy): https://cyberlab.pacific.edu/courses/comp175/resources/aws-academy/AWS_Academy_Learner_Lab-Foundational_Services.pdf
+
+## Round 2 (2026-11-08): stateful sandboxes and FS path
+Grades: P peer-reviewed · A arXiv · V vendor · C community. "read" = primary text read this session.
+- [P, read] Anjali, Caraza-Harter, Swift, *Blending Containers and Virtual Machines: A Study of Firecracker and gVisor*, VEE 2020, DOI 10.1145/3381052.3381315. https://par.nsf.gov/servlets/purl/10176031
+- [P, read] van Rijn, Rellermeyer, *A Fresh Look at the Architecture and Performance of Contemporary Isolation Platforms*, Middleware 2021. https://arxiv.org/abs/2110.11462
+- [P, read] Lee, Kim, Kwon, Park, Hong, *Impact of Secure Container Runtimes on File I/O Performance in Edge Computing*, Applied Sciences 13(24):13329, 2023. https://doi.org/10.3390/app132413329
+- [P, abstract] Jang, Suh, Tak, *Understanding File System Operations of a Secure Container Runtime Using System Call Tracing Technique*, IEICE Trans. Inf. & Syst. E107-D(2):229–233, 2024. DOI 10.1587/transinf.2023EDL8039
+- [P, S] Harter et al., *Slacker: Fast Distribution with Lazy Docker Containers*, FAST 2016. https://research.cs.wisc.edu/wind/Publications/slacker-fast16.pdf
+- [P, S] Oakes et al., *SOCK: Rapid Task Provisioning with Serverless-Optimized Containers*, ATC 2018. https://www.usenix.org/conference/atc18/presentation/oakes
+- [P, S] Li et al., *RunD*, ATC 2022. https://www.usenix.org/conference/atc22/presentation/li-zijun-rund
+- [P, S] Ao, Porter, Voelker, *FaaSnap*, EuroSys 2022. https://www.sysnet.ucsd.edu/~voelker/pubs/faasnap-eurosys22.pdf
+- [A, read] Zheng et al., *AgentCgroup: Understanding and Controlling OS Resources of AI Agents*, arXiv:2602.09345. https://arxiv.org/html/2602.09345v2
+- [A, read] Wu, Chang, Cao, Gao, Wang, *Crab: A Semantics-Aware Checkpoint/Restore Runtime for Agent Sandboxes*, arXiv:2604.28138. https://arxiv.org/html/2604.28138v1
+- [A, read] Dong et al., *DeltaBox: Scaling Stateful AI Agents with Millisecond-Level Sandbox Checkpoint/Rollback*, arXiv:2605.22781. https://arxiv.org/html/2605.22781v1
+- [A, read] Xu, Zhou, Wu, Kaffes, *Toward Systems Foundations for Agentic Exploration*, arXiv:2510.05556. https://arxiv.org/abs/2510.05556
+- [A, read partial] Huang et al., *DeepSeek Elastic Compute (DSec)*, arXiv:2609.22978. https://arxiv.org/html/2609.22978
+- [A, read] *SWE-MiniSandbox: Container-Free Reinforcement Learning*, arXiv:2602.11210. https://arxiv.org/html/2602.11210v3
+- [A, S] Shepherd arXiv:2605.10913; TVCACHE arXiv:2602.10986; RepoForge arXiv:2508.01550; CodeGrep arXiv:2608.05886.
+- [V, read] Modal, *VM sandbox filesystem* (2026-10-16). https://modal.com/blog/vm-sandbox-filesystem
+- [V, read] Tensorlake, *Firecracker disk snapshots, O(changed bytes)* (2026-07-13). https://tensorlake.ai/blog/firecracker-disk-snapshots-o-changed-bytes
+- [V, read] *Scaling Firecracker using OverlayFS to save disk space* (2025-02-12), on E2B blog. https://www.e2b.dev/blog/scaling-firecracker-using-overlayfs-to-save-disk-space
+- [V, read] gVisor rootfs overlay (2023). https://opensource.googleblog.com/2023/04/gvisor-improves-performance-with-root-filesystem-overlay.html
+- [V, read] gVisor directfs (2023-06-27). https://gvisor.dev/blog/2023/06/27/directfs/
+- [V] gVisor filesystem guide (overlay2 default root:self). https://gvisor.dev/docs/user_guide/filesystem/
+- [V, read] Epoch AI, *How to run SWE-bench Verified in one hour on one machine*. https://epoch.ai/latest/swebench-docker
+- [V] E2B persistence docs. https://e2b.dev/docs/sandbox/persistence
+- [V] Daytona persistence docs. https://www.daytona.io/docs/en/persistence
+- [V] Vercel Sandbox snapshots/persistence. https://vercel.com/docs/sandbox/concepts/snapshots
+- [V] Modal sandbox snapshots. https://modal.com/docs/guide/sandbox-snapshots
+- [V] Fly Sprites checkpoint/restore. https://fly.io/sprites/checkpoint-restore.md
+- [V] Cloudflare Sandbox backup/restore. https://developers.cloudflare.com/sandbox/guides/backup-restore
+- [V] GKE Agent Sandbox snapshots. https://agent-sandbox.sigs.k8s.io/docs/sandbox/snapshots/ · InfoQ on Pod Snapshots: https://infoq.com/news/2026/09/gke-pod-snapshots-benchmarks
+- [V] OpenAI Codex cloud environments. https://developers.openai.com/codex/cloud/environments
+- [V] CodeSandbox, *Cloning microVMs using userfaultfd*. https://codesandbox.io/blog/cloning-microvms-using-userfaultfd
+- [V] Modal memory snapshots (gVisor). https://modal.com/blog/mem-snapshots
+- [C] Firecracker block caching doc (mirror): https://cocalc.com/github/aos/firecracker/blob/main/docs/api_requests/block-caching.md — verify upstream
+- [C] LWN, virtio-fs RFC with smallfile numbers. https://lwn.net/Articles/774495/
+- [C] Kata runtime issue #2138 (virtio-fs fio). https://github.com/kata-containers/runtime/issues/2138
+- [V] Man Group, pip performance analysis. https://www.man.com/technology/improving-python
+- [C, blocked] virtio-fs perf numbers thread (listman.redhat.com not allowed in session; lore mirror 403). https://listman.redhat.com/archives/virtio-fs/2020-December/002384.html

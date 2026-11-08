@@ -69,6 +69,29 @@ Key observation: the CVM paper already shows **exit type (idle transitions) driv
 
 ---
 
+## 2b. Cross-mechanism comparisons that DO exist (correction to the brief, added round 2)
+
+The brief says isolation cost is measured "within one mechanism at a time". That is wrong. Full numbers are in `11-stateful-fs-path.md` §2.
+
+| Work | Mechanisms | Versions | Method | What it lacks for us |
+|---|---|---|---|---|
+| Anjali, Caraza-Harter, Swift, *Blending Containers and Virtual Machines: A Study of Firecracker and gVisor*, VEE'20 — **V (PDF text read)** | LXC, gVisor (KVM platform), Firecracker | gVisor release-20200127.0, FC v0.19.1, kernel 5.4.13, CloudLab xl170 | host-kernel **code coverage** (gcov) + micro-benchmarks. Both gVisor and FC execute more host kernel code than native | 2020 versions. Coverage, not time per crossing. No per-sandbox attribution. Bulk I/O only. No Kata |
+| van Rijn & Rellermeyer, *A Fresh Look at the Architecture and Performance of Contemporary Isolation Platforms*, Middleware'21 (arXiv:2110.11462) — **V (PDF text read)** | Docker, LXC, QEMU/KVM, Firecracker, Cloud Hypervisor, Kata, gVisor, OSv | ~2021 | CPU, memory, fio 128 KiB block I/O (FC excluded), iperf3, attack surface | Block-level only, no metadata. gVisor on 9p/gofer era |
+| Lee et al., *Impact of Secure Container Runtimes on File I/O Performance in Edge Computing*, Appl. Sci. 13:13329, 2023 — **V (PDF text read)** | runc, Kata (virtio-fs), gVisor, Firecracker | Kata 1.12.0-alpha0, gVisor 20201208.0, FC v0.21.0 | fio + mpstat + symbol-level profiling | Bulk I/O, 2020 versions |
+| Modal, *VM sandbox filesystem*, 2026-10-16 — **V (vendor blog read)** | virtio-fs VM, gVisor, host, virtio-blk VM | unstated | 100k-op metadata microbench + bun/ripgrep/SQLite/pgbench | No methods. Own hosts, own FS stack |
+
+## 2c. Stateful agent sandbox systems (2026 cluster, added round 2)
+
+| Work | Group | What | Overlap risk |
+|---|---|---|---|
+| AgentCgroup, arXiv:2602.09345 — **V (HTML read)** | eunomia-bpf (Zheng, …, Quinn) | Characterizes Claude Code agents in Podman (144 tasks): OS-level 56–74% of time, init 31–48%, tests dominate Bash time. eBPF/sched_ext/memcg controller | **High on tooling** (eBPF + cgroup, tool-call level). Differs in goal: resource control, single runtime |
+| Crab, arXiv:2604.28138 — **V (HTML read)** | HKUST (shares authors with AgentSysBench) | Semantics-aware C/R for agent sandboxes. runc+CRIU+ZFS, eBPF inspector | Medium. Single runtime. C/R design, not boundary cost |
+| DeltaBox, arXiv:2605.22781 — **V (HTML read)** | SJTU IPADS + Huawei | ms-level checkpoint/rollback on Firecracker. Overlayfs layer-switch (DeltaFS) + CRIU template fork (DeltaCR) | Medium. Has FC-Diff / CHV / docker baselines for state ops |
+| Xu, Zhou, Wu, Kaffes, *Toward Systems Foundations for Agentic Exploration*, arXiv:2510.05556 — **V (PDF text read)** | Columbia | Benchmarks 6 snapshot/restore tools. Argues for a native fork primitive | Low |
+| Shepherd arXiv:2605.10913; TVCACHE arXiv:2602.10986 — **S** | — | fork/revert for meta-agents. Tool-value cache with sandbox forking | Low |
+| DSec, arXiv:2609.22978 — **V (HTML, first 100k chars)** | DeepSeek | Production sandbox platform: ~380K concurrent, ≥3,200 containers or ≥800 microVMs/node, EROFS/3FS lazy loading, OverlayBD+ublk for microVMs, CPU QoS study | Medium for O5 (co-tenant interference). Strong source for lifecycle realism |
+| SWE-MiniSandbox, arXiv:2602.11210 — **V (HTML read)** | — | Replaces containers with mount-ns + chroot for RL. Env setup 88.9 s → 23.6 s. 605 GB → 89 GB for SWE-bench Verified | Evidence that sandbox setup cost drives RL infra away from containers |
+
 ## 3. Practitioner / vendor cross-runtime comparisons (folk numbers)
 
 All **S**, none peer-reviewed, mutually inconsistent:

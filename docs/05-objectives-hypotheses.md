@@ -48,6 +48,23 @@ Notation: `r` runtime, `w` workload, `D/A/C/η/R` from `03-unit-of-account.md`.
 - **Control:** repeat with FS held as constant as possible (`*-blk` rows). If the flip disappears, the cause is **FS design, not isolation mechanism** — reported as such.
 - **Prior:** high that a flip exists with default FS (e.g. gVisor competitive on compute-bound build, poor on metadata-heavy install); uncertain whether it survives FS control.
 
+**Round-2 note on H-5:** the expected flip is now framed around **metadata-heavy phases** (init, turn:test, env-build) vs compute phases. Evidence for large FS-path effects comes from vendor data (Modal). Evidence that install is a small share of agent time comes from AgentCgroup. Both are in `11` §2–3. Clone/install remain measured, but under `env-build`.
+
+## H-S (new, round 2) — state operations rank runtimes differently from turns
+
+- **Statistic:** checkpoint and restore latency, bytes copied, and post-restore fault HSEs per runtime's native mechanism (CRIU for runc, runsc checkpoint/fs snapshot, FC full/diff snapshot, CHV snapshot), at fixed dirty-set sizes and on replayed traces.
+- **Claim:** the runtime ranking on `state-op` differs from the ranking on `turn:*` phases (non-overlapping bootstrap rank intervals).
+- **Disconfirmed if:** the same order holds.
+- **Prior:** high that it differs. microVM memory snapshots scale with RAM (E2B ~4 s/GiB), while overlay/ZFS-style FS checkpoints are ~10–20 ms (Crab, DeltaBox).
+- **Scope guard:** measurement of existing mechanisms only. No new C/R design.
+
+## H-D (new, round 2) — durability semantics explain a large part of "FS speed" gaps
+
+- **Statistic:** turn:test and env-build time per VM row under `cache_type`/flush settings that do vs do not propagate guest fsync to the host.
+- **Claim:** at least one published "microVM is faster at file I/O" result (VEE'20, Lee et al. 2023) shrinks by ≥ 50% once durability is equalized.
+- **Disconfirmed if:** the gap persists.
+- **Prior:** moderate. VEE'20 itself attributes Firecracker's write speed to skipping write-back.
+
 ## H-6 (from O5) — tail latency under co-tenancy
 
 - **Setup:** one measured sandbox + N ∈ {0, 1, 2, 4, 8, …up to RAM limit} neighbors, neighbor types from a fixed set (CPU-bound, syscall-heavy, I/O-heavy, memory-bandwidth, idle-live).
@@ -56,6 +73,7 @@ Notation: `r` runtime, `w` workload, `D/A/C/η/R` from `03-unit-of-account.md`.
 - **Claim:** (b) beats (a) on both metrics with non-overlapping CIs.
 - **Disconfirmed if:** not.
 - **Risk:** probe overhead on neighbors distorts tails (Craun et al.); T1 counters only, overhead measured with probes on/off.
+- **Prior art (round 2):** DSec (arXiv:2609.22978) already reports +45.2% latency-sensitive step latency at 50% best-effort load, and +17.3% with SCHED_IDLE + core scheduling. H-6 differs by attributing the interference to host-serviced-event classes and by adding memory-pressure neighbors. Memory, not CPU, bounds density (AgentCgroup).
 
 ## H-F (new) — folk-number audit
 

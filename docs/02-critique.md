@@ -83,6 +83,13 @@ If the residual is a large fraction for VMs on memory-heavy phases (likely for `
 
 ## 4. Confound: filesystem design masquerades as isolation mechanism
 
+> **Update 2026-11-08 (round 2):** the original version of this section said FS cost "probably" dominates clone/install. That was a conjecture. `11-stateful-fs-path.md` replaces it with graded evidence:
+> - **Supported:** per-metadata-op cost differs ~10–50× across FS paths. Example: Modal reports `bun install` at 12.5 s over virtio-fs vs 1.07 s over virtio-blk [vendor].
+> - **Contradicted for prebuilt-image agent tasks:** install is ~10% of Bash time and tests 44–73% (AgentCgroup, arXiv:2602.09345).
+> - **New:** initialization/restore and state operations (checkpoint/fork) are FS-design-bound phases the brief did not list.
+>
+> The table below stays as the *mechanism* description. The *claim* is now the one in `11` §3.
+
 | Runtime (typical config) | Rootfs / workspace path | Host-side handler |
 |---|---|---|
 | runc | overlayfs on host | host kernel |
@@ -124,6 +131,19 @@ If the residual is a large fraction for VMs on memory-heavy phases (likely for `
 | CVM comparison is feasible | On AWS you are the **guest** of a CVM — no host-side tracing is possible | See `09-open-questions.md` Q2; recommend drop |
 | GitHub Actions / Claude container useful for measurement | Both are VMs. This session's container is a **Firecracker guest** (`dmesg`: `--firecracker-init`, "Hypervisor detected: KVM", no `/dev/kvm`) | Use only for analysis CI, never for numbers |
 | Citations in §2 of the brief all exist as named | "Does Virtualization Really Incur a 5% Overhead?" not found | See `01-literature.md` §7 |
+
+## 8b. Round-2 findings (stateful sandboxes; details in `11-stateful-fs-path.md`)
+
+| # | Finding | Evidence | Effect on plan |
+|---|---|---|---|
+| 1 | Agent sandboxes are long-lived stateful sessions. FaaS suites model none of the lifecycle | DSec median life 15–17 min, p99 > 3 h. E2B/Daytona/Vercel/Modal/Fly persistence features | Lifecycle phases replace clone/install/build/test (D-14) |
+| 2 | Brief §2 "measured within one mechanism at a time" is **wrong** | VEE'20 (LXC/gVisor/FC), Middleware'21, MDPI 2023, Modal 2026 | Novelty restated (D-18) |
+| 3 | Vendors converge on block-device FS for VM sandboxes | Modal, Tensorlake, E2B, DSec, this session's container | Block-backed configs primary (D-16) |
+| 4 | Firecracker's default block cache is `Unsafe`. VEE'20 FC write speed comes from skipping write-back | FC docs mirror, VEE'20 | Durability declared and held equal (D-15) |
+| 5 | State ops (checkpoint/fork/restore) can dominate tree-search trajectories | DeltaBox: 47–77% on FC/CHV baselines | State-op phase added (D-17) |
+| 6 | Init (overlay ID-remap) is 31–48% of task lifecycle under Podman | AgentCgroup | Init is a measured phase. Rootless/ID-mapped config is named |
+| 7 | Memory, not CPU, bounds density. Co-tenant CPU interference already measured | AgentCgroup, DSec (+45.2% step latency at 50% BE load) | O5 must cite DSec and add memory pressure |
+| 8 | Three groups active on stateful agent sandboxes | HKUST, SJTU IPADS, eunomia-bpf | Scoop risk raised (R1, R15) |
 
 ## 9. What is genuinely strong in the brief
 

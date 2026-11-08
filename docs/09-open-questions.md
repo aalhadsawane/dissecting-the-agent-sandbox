@@ -1,45 +1,71 @@
-# 09 — Open questions for the owner (with recommendations)
+# 09 — Questions for the owner (consolidated, round 2)
 
 **TL;DR**
-- Q1 gVisor: run **systrap** (default) and **KVM** (bare-metal best case). Both, because they cross the boundary differently.
-- Q2 CVM: **drop from core**. On AWS you are the CVM guest; the host side cannot be traced, so it cannot populate the unit of account.
-- Q3 venue: **blog + arXiv first**, then workshop. Deadline TBD.
-- Q4 overnight runs: needed for co-tenancy; answer decides O5 scope.
-- Q5–Q9 are new questions this review raised.
+- 22 questions in 6 groups. **Blocking before week 1:** H1–H4 (hardware), S1 (stateful scope), F1 (FS matrix), A1 (AWS account).
+- Each question has a reason (with evidence pointer) and a recommendation. A short answer like "agree with rec" is enough.
 
 ---
 
-### Q1. Which gVisor platform, and is one alternative in scope?
-- **Recommendation:** `systrap` (default since 2023; what users run) **and** `kvm` (docs recommend it on bare metal). ptrace is deprecated — exclude.
-- Why both: systrap = trap per syscall to a host process; KVM = Sentry in guest ring0, exits only on host calls. Same product, different HSE structure — a clean within-vendor test of the abstraction.
-- Cost: one extra row.
+## H — Hardware and host (blocking)
 
-### Q2. Confidential-VM comparison: wanted or distraction?
-- **Recommendation:** distraction for the core paper.
-- Reasons: (1) no host access on cloud CVMs → no HSE decomposition; (2) the home server would need SEV-SNP/TDX-capable CPU + firmware to do it properly — unknown; (3) arXiv:2609.04478 already covers CVM vs VM for serverless.
-- Exception: if the home CPU supports SEV-SNP or TDX with host access, it becomes a strong extension (encrypted memory changes MEM-class costs). Ask after specs arrive.
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| H1 | CPU model, vendor (Intel/AMD), cores/threads, sockets? Output of `lscpu` and the `flags` line of `/proc/cpuinfo` | Exit-reason mapping differs VMX vs SVM. Constant TSC needed for guest↔host correlation (`03` §6) | Paste raw output |
+| H2 | RAM size? | tmpfs must hold images + repos + mirrors. Memory, not CPU, bounds agent density (AgentCgroup; DSec 3,200 containers vs 800 microVMs/node) | ≥ 64 GB is comfortable. If ≤ 32 GB, O5 shrinks |
+| H3 | Is it truly bare metal, and can I get root, BIOS settings (turbo, C-states, SMT) and a custom/pinned kernel? | Invariants 1 and 3. vhost_task attribution needs kernel ≥ 6.4 | Paste `systemd-detect-virt` and `dmidecode -s system-product-name` |
+| H4 | Remote access method, other services/users on the box, and can it run unattended overnight? | Interleaved sweeps, three-strikes reruns, O5 sample counts | Overnight runs strongly preferred |
+| H5 | Does the CPU support SEV-SNP or TDX with host access (BIOS + firmware)? | The only way a CVM row could be decomposed host-side (`06` §4) | Only matters if yes |
 
-### Q3. Workshop first or arXiv + blog first?
-- **Recommendation:** blog (week 4) + arXiv (week 8), then workshop.
-- APSys deadline: **TBD** — not verified in this session. Check before freezing the plan.
+## S — Scope after the stateful-sandbox findings (`11`)
 
-### Q4. Can the server run overnight sweeps?
-- Affects O5 (needs many samples per neighbor configuration) and three-strikes reruns.
-- If daytime only: O5 becomes exploratory; reduce neighbor types.
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| S1 | Should **state operations** (checkpoint / fork / rollback / suspend-resume) be in core scope, measured with each runtime's *native* mechanism? | DeltaBox: state management 47–77% of tree-search trajectory time on FC/CHV baselines. E2B pause ~4 s/GiB. Highest interaction between isolation and FS design (`11` §5) | **Yes**, measurement only. No new C/R system (DeltaBox/Crab own that) |
+| S2 | Accept the new phase set (env-build, init/restore, turn:test, turn:python, turn:edit-grep, idle-live, state-op) instead of clone/install/build/test? | AgentCgroup: install ~10% of Bash time, tests 44–73%, init 31–48% of lifecycle (`11` §3) | **Yes**. Clone/install kept under env-build |
+| S3 | Which agent populations matter most to you: (a) prebuilt-image SWE/RL tasks, (b) "fresh repo" products with setup scripts (Codex/Claude Code web style), (c) tree-search/RL with forking? | Each weights phases differently: (a) test-heavy, (b) env-build-heavy but cached, (c) state-op-heavy | (a) + (c) primary, (b) as a sensitivity case |
+| S4 | Keep O1 as the crossover curve `f(L)`? | 2605.26297 says LLM is 71–98% of time; AgentCgroup says OS-level is 56–74%. The gap is explained by model speed and whether init is counted | **Yes** |
+| S5 | Keep "host time per unit of workload demand" (D×A×C) instead of "per crossing"? | `02` §2 | **Yes** |
+| S6 | CVM in or out? | No host access on cloud CVMs; overlaps 2609.04478 | **Out**, unless H5 = yes |
 
-### Q5 (new). Server specs — see `06-infrastructure.md` §1. **Blocking.**
+## F — Filesystem / storage design
 
-### Q6 (new). Is the reframing of O1 acceptable?
-- Original: "sandbox > 50% of wall-clock with stubbed model" — cannot fail.
-- Proposed: crossover curve `f(L)` and `L*` (`05` H-1). Prior work (2605.26297) suggests LLM time dominates for real models; the curve says when that stops being true.
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| F1 | Make **block-backed** VM configs primary (FC virtio-blk, Kata-CLH block) and virtio-fs secondary? | Vendors converge on block (Modal, Tensorlake, E2B, DSec, this session's container). Modal: `bun install` 12.5 s virtio-fs vs 1.07 s blk [vendor] (`11` §4) | **Yes** |
+| F2 | Hold **durability** equal (guest fsync reaches host fsync) in the main table, with vendor defaults as a second labelled series? | FC default `cache_type` = `Unsafe`. VEE'20 FC write speed came from skipping write-back (`11` §6) | **Yes** |
+| F3 | Production uses **lazy remote image loading** (Modal ImageFS, DSec 3FS, E2B NBD). Our storage is tmpfs. Choose: (a) state as limitation, (b) emulate with a local lazy block/FUSE server with injected latency, (c) skip | Runtime touches only 4.2–13.3% of image data (DSec), 6.4% (Slacker). First-touch reads are host-serviced events | **(a)** for core, **(b)** as stretch |
+| F4 | Is a rootless/ID-mapped config (`runc-idmap`) in scope? | AgentCgroup attributes 31–48% of lifecycle to Podman ID remapping | Optional row, init phase only |
 
-### Q7 (new). Is replacing "host time per crossing" with "host time per unit workload demand" acceptable?
-- See `02-critique.md` §2. Per-crossing will still be reported, to show why it misleads.
+## W — Workloads and data
 
-### Q8 (new). AWS account type?
-- Academy Learner Lab vs regular account with credits decides whether metal is possible at all.
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| W1 | OK to build a **thin trace-replay harness** (not a benchmark suite) over published traces? This is a scoped exception to "don't build a new suite" | No existing suite covers the agent lifecycle. SeBS/vHive stay as calibration | **Yes** |
+| W2 | Trace source: (a) public trajectories (SWE-agent / Terminal-Bench / released AgentCgroup or Crab traces if available), (b) self-recorded with a local model, (c) API model | (b)/(c) cost GPU time or money. Licensing of (a) varies | (a) first, (b) if the server has a GPU — does it? |
+| W3 | Which repos/languages: Python-only, or also Node and a compiled project? | Python import storms dominate tests. Node is the most metadata-heavy install (Modal's bun/pnpm data) | Python + Node core, one C/Rust build as compute control |
 
-### Q9 (new). Citations to resolve
-- Source of "Does Virtualization Really Incur a 5% Overhead?" — not found under that title.
-- Exact entries for "Zhang et al. I/O virtualization (2010)" and "Hofstra multi-threaded overhead diagnosis".
-- Where the "178k production sessions" figure for AgentSysBench comes from.
+## R — Runtimes
+
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| R1 | gVisor: `systrap` + `KVM` platforms, defaults for FS (overlay `root:self`, directfs on)? | Docs: systrap default, KVM best on bare metal. Overlay/directfs are defaults since 2023 | **Yes**. `directfs=off` optional |
+| R2 | Kata hypervisor: Cloud Hypervisor only, or also QEMU? | VMM is a separate variable. Time budget | CLH only. QEMU if time allows |
+| R3 | Firecracker: drive it directly (own kernel + rootfs), not via firecracker-containerd? | Removes orchestration confound (`02` §6) | **Yes** |
+
+## A — Accounts, publication, logistics
+
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| A1 | AWS account type (Academy Learner Lab vs normal account with credits) and credit amount? | Learner Labs likely block `.metal`. Decides portability check | Tell me which |
+| A2 | Venue/timeline: blog + arXiv first, APSys later? Any hard date (graduation, applications)? | APSys deadline not yet verified | Blog wk 4, arXiv wk 8 |
+| A3 | Blog domain/stack, and may posts name vendors whose numbers we audit (Modal, E2B, Tensorlake)? | H-F audits vendor claims. Tone and right-of-reply | Name them, factual tone, notify before publishing |
+| A4 | Should the repo stay public from day one? | Scoop risk (R15) vs openness/timestamp | Public. The commit history timestamps the method |
+
+## C — Citations to resolve (from the brief)
+
+| ID | Item |
+|---|---|
+| C1 | Source of "Does Virtualization Really Incur a 5% Overhead?" (not found under that title) |
+| C2 | Exact refs: Zhang et al. I/O virtualization (2010); "Hofstra multi-threaded overhead diagnosis" |
+| C3 | Origin of "178k production sessions" for AgentSysBench (not seen in the part read) |
+| C4 | Optional: allow `listman.redhat.com` in this session's network settings (virtio-fs performance thread), or read it yourself |

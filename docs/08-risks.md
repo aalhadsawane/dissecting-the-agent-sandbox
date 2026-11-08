@@ -20,3 +20,8 @@
 | R12 | Citations wrong/mis-titled | Confirmed for 1 | L–M | `01` §7 | Resolve before any draft; never cite unread numbers |
 | R13 | Noise from home environment (thermal, other services, power events) | M | M | Pilot variance | Interleaved runs, reboot blocks, record temperature/frequency, overnight only if Q4 allows |
 | R14 | Scope creep into security (escape testing) | L | M | — | Non-goal; refuse |
+| R15 | Scooped by an active stateful-agent-sandbox group (HKUST: AgentSysBench+Crab; SJTU IPADS: DeltaBox; eunomia-bpf: AgentCgroup) | M–H | H | Weekly arXiv check on these author lists | Differentiate on cross-runtime boundary decomposition + durability-controlled FS comparison. Blog 1 early |
+| R16 | tmpfs-backed storage cannot reproduce production lazy remote loading (Modal ImageFS, DSec 3FS, E2B NBD) | H | M | — | State as limitation, or emulate lazy loading with a local lazy block/FUSE server (Q-F3) |
+| R17 | Scope creep into building a C/R system (H-S) | M | M | — | Measure native mechanisms only |
+| R18 | Vendor numbers (Modal, Tensorlake) quoted as facts | M | M | Review | Grade V everywhere. Reproduce before citing in paper |
+| R19 | Some sources unreachable from the cloud session (listman.redhat.com not allowed; lore.kernel.org 403) | Confirmed | L | — | Owner reads them, or allows the host |

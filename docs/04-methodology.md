@@ -40,6 +40,12 @@ Pinned environment manifest (published per run):
 | `fc-virtioblk` | Firecracker direct, ext4 rootfs + workspace on virtio-blk backed by tmpfs file | ✓ | `fc-snapshot` (restore path, O2) |
 | `kata-clh-blk` | Kata + CLH + block workspace | for FS-held-constant comparison (D-05) | — |
 
+**Round-2 revision (D-16, D-15; evidence in `11` §4, §6):**
+- Primary VM rows are **block-backed**: `fc-virtioblk` and `kata-clh-blk`. That is where stateful vendors converge (Modal, Tensorlake, E2B, DSec). `kata-clh-virtiofs` becomes a labelled secondary ("shared-directory" case).
+- gVisor primary = default `--overlay2=root:self` + directfs (both defaults per gVisor docs). `gvisor-*-directfs=off` is optional (tests the 2023 change).
+- Every row declares **durability** (guest fsync → host fsync or not) and **cache mode** (FC `cache_type`, virtio-fs `cache=`, guest mount options). The main comparison holds them equal. Vendor defaults (e.g. FC `Unsafe`) are a separate labelled series.
+- `runc-idmap` (rootless / ID-mapped overlay) is optional: AgentCgroup attributes 31–48% of task lifecycle to Podman ID remapping.
+
 Guest kernels: one pinned guest kernel version for all VM rows; config differences (FC minimal vs Kata) documented. Same vCPU count and RAM for every sandbox.
 
 ## 3. Storage and network held constant (brief §8)
@@ -59,6 +65,19 @@ Guest kernels: one pinned guest kernel version for all VM rows; config differenc
 - Extract the ordered tool-call sequence (bash commands, file reads/edits, test runs).
 - Replay deterministically in each runtime; model calls replaced by `sleep(L)` with `L` from (i) 0, (ii) recorded latencies, (iii) a sweep for the O1 crossover curve.
 - Caveat: replay removes feedback (a real agent would react to different outputs). Only trajectories whose tool outputs match the original (exit codes, test results) are kept; mismatches are logged.
+
+### 4.2a Lifecycle phases (round 2, D-14 — supersedes the phase list in 4.2 for weighting)
+| Phase | Example | Why (evidence, `11`) |
+|---|---|---|
+| env-build | clone + install from local mirror | Usually cached in images/templates. Measured, **not** weighted as session time |
+| init / restore | cold boot, snapshot restore, warm-pool claim, ID-mapped overlay setup | Init 31–48% of lifecycle (AgentCgroup) |
+| turn:test | pytest collection + run on pinned repos | Tests 44–73% of Bash time (AgentCgroup). Python import storm |
+| turn:python | short Python snippets | 26.9% of GLM Bash time (AgentCgroup) |
+| turn:edit-grep | read/edit/rg/git status | Frequent, individually cheap |
+| idle-live | waiting on model | ~90% of sandboxes ≤ 5% CPU (DSec) |
+| state-op | checkpoint / fork / rollback / suspend-resume, native mechanism per runtime | 47–77% of trajectory time in tree search on FC/CHV baselines (DeltaBox) |
+
+Phase weights for headline numbers come from published trace distributions (AgentCgroup, Crab), cited, not from our intuition.
 
 ### 4.2 Phase micro-workloads (O4)
 | Phase | Example | Dominant classes (expected) |

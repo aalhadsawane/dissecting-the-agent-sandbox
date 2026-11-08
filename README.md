@@ -9,6 +9,7 @@ Where does an agent sandbox's time actually go — at the isolation boundary, pe
 - **The thesis needs care:** a second 2026 study (arXiv:2605.26297) finds LLM inference is ~71–98% of execution time for Claude-Code-driven benchmarks. "Sandbox is the cost center" holds for *dollars* (idle billing) far more than for *time*. O1 is reframed as a crossover curve.
 - **Unit of account:** the *host-serviced event* (HSE), cost = demand × amplification × unit cost, plus a reported residual for overhead that never crosses the boundary (2-D page walks, guest-kernel work).
 - **First result (week 4):** a folk-number audit — re-measure published gVisor/Firecracker/vendor numbers with pinned modern versions and explain the gaps.
+- **Round 2 (stateful sandboxes):** agent sandboxes are long-lived stateful sessions, not FaaS. Vendors converge on block-device FS for VM sandboxes. State ops (checkpoint/fork) and durability semantics are new first-class variables. "FS dominates clone/install" is withdrawn: graded evidence in [`docs/11-stateful-fs-path.md`](docs/11-stateful-fs-path.md).
 - **Blocking:** home server specs and the answers in [`docs/09-open-questions.md`](docs/09-open-questions.md).
 
 ## Documents (read in order)
@@ -25,6 +26,7 @@ Where does an agent sandbox's time actually go — at the isolation boundary, pe
 | 08 | [risks](docs/08-risks.md) | Risk register |
 | 09 | [open questions](docs/09-open-questions.md) | For the owner, with recommendations |
 | 10 | [decision log](docs/10-decision-log.md) | Decisions and their evidence |
+| 11 | [stateful FS path](docs/11-stateful-fs-path.md) | Round 2: stateful sandboxes, FS data path evidence (graded), state ops, durability |
 | — | [references](docs/references.md) | Links + verification status |
 
 ## Invariants (from the brief, non-negotiable)

@@ -15,3 +15,10 @@ Format: ID · date · decision · evidence · reversible?  Changes to pre-regist
 | D-09 | 2026-11-08 | CVM recommended out of core scope | No host-side tracing on cloud CVMs; overlaps 2609.04478 | Yes (Q2) |
 | D-10 | 2026-11-08 | Folk-number audit (H-F) added as first publishable result | Folk numbers stale (pre-systrap) and mutually inconsistent | Yes |
 | D-11 | 2026-11-08 | No number from a source marked S/U in `01` is cited until the primary source is read | Invariant 2; one brief citation not found | No |
+| D-12 | 2026-11-08 | `02` §4 "FS dominates clone/install" withdrawn as a claim and replaced by graded evidence (`11`) | Owner review; AgentCgroup shows install ~10% of Bash time | No |
+| D-13 | 2026-11-08 | Evidence grades P/A/V/C used for every number | Vendor numbers lack methods | No |
+| D-14 | 2026-11-08 | Phases = env-build, init/restore, turn:test, turn:python, turn:edit-grep, idle-live, state-op. Weights from published traces | Agent sandboxes are stateful sessions (DSec lifetimes, AgentCgroup, Crab) | Yes (Q-W2) |
+| D-15 | 2026-11-08 | Durability and cache mode declared per row and held equal in main comparison | FC default `Unsafe`; VEE'20 write-back finding | No |
+| D-16 | 2026-11-08 | Block-backed VM configs primary; virtio-fs secondary; gVisor defaults (overlay root:self, directfs) primary | Vendor convergence on block (Modal, Tensorlake, E2B, DSec) | Yes (Q-R2) |
+| D-17 | 2026-11-08 | State ops measured with native mechanisms; no new C/R design | DeltaBox/Crab occupy design space | Yes (Q-S1) |
+| D-18 | 2026-11-08 | Novelty restated: current versions + metadata/agent workloads + per-sandbox boundary attribution + lifecycle/state ops + controlled FS/durability | VEE'20, Middleware'21, MDPI 2023, Modal 2026 exist | No |
