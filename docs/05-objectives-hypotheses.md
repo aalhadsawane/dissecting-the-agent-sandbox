@@ -71,8 +71,16 @@ Notation: `r` runtime, `w` workload, `D/A/C/η/R` from `03-unit-of-account.md`.
 - **Statistic:** `C_c` (host time per HSE) for `USERSPACE-handled` vs `KERNEL-handled` exit classes, per runtime, under `vmscape=ibpb` vs `vmscape=off`.
 - **Claim:** `C` of USERSPACE-handled classes rises materially (threshold to be fixed after the week-1 pilot) while KERNEL-handled `C` does not; gVisor-KVM host calls behave like USERSPACE-handled exits.
 - **Disconfirmed if:** no class shows a difference outside bootstrap CIs, or KERNEL-handled classes change too (would indicate a different cause).
-- **Feasibility:** needs a boot-parameter change → only with admin consent, preferably on AWS metal where we are the only tenant (Ice Lake-class parts are listed as not vulnerable, so choose a part that is). Otherwise reported as an unquantified caveat.
+- **Feasibility:** needs a boot-parameter change → only with admin consent, only with the admin's consent on HOST-A, or on another host we control (`12` §6b); no AWS (D-31). Otherwise reported as an unquantified caveat.
 - **Prior:** moderate; the mechanism is documented, the magnitude is unknown (kernel doc gives no numbers).
+
+## H-X (new, 2026-11-09, exploratory) — structure transfers across core types, unit cost does not
+
+- **Setup:** same sandbox workload pinned to P-core threads vs E-core threads of HOST-A (no reboot).
+- **Statistic:** per-class `A_c` (HSEs per unit demand) and `C_c` (host time per HSE) with bootstrap CIs, per runtime.
+- **Claim:** `A_c` agrees across core types; `C_c` differs.
+- **Disconfirmed if:** `A_c` differs (structure is hardware-dependent) or `C_c` does not differ (unit cost transfers better than assumed).
+- **Caveat:** weak proxy for a different CPU; same memory system and kernel; mitigation set may differ per core type (RFDS — verify). See `12` §6b.
 
 ## H-6 (from O5) — tail latency under co-tenancy
 

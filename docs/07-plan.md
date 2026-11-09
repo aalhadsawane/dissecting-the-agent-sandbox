@@ -3,12 +3,12 @@
 **TL;DR**
 - Order is chosen to produce a **publishable result early** (folk-number audit, week 4) and to **validate the probe before any phase sweep**.
 - Five gates. Failing a gate changes scope (listed), not the invariants.
-- Minimum viable paper = H-F + H-4/H-5 on four runtimes with validated probes. O5 and the AWS check are stretch.
+- Minimum viable paper = H-F + H-4/H-5 on four runtimes with validated probes. O5 and any second-host check are stretch.
 
 ```
 week   0     1        2          3            4           5          6          7          8
        │     │        │          │            │           │          │          │          │
-       Q&A   host     workloads  probe v0     calibration phase      co-tenancy AWS +      write-up
+       Q&A   host     workloads  probe v0     calibration phase      co-tenancy 2nd-data-pt +      write-up
        specs bring-up + replay   + validation + folk audit sweeps    (O5)       3-strikes  artifact
        pre-  pin env  + O1 pilot + overhead   BLOG 1      O2–O4                 reruns     BLOG 2
        reg.                                                                               arXiv
@@ -23,7 +23,7 @@ week   0     1        2          3            4           5          6          
 ## Week 0b — host noise baseline and consent (added 2026-11-09; `12` §3–§4, §7)
 - Owner runs the read-only evidence requests (`12` §9) and obtains consent/windows from the other tenants for: core claims (cpuset partitions), governor/turbo windows, memory cap, runtime installs, one scheduled reboot.
 - Start the **canary baseline** (≥ 7 days: null-syscall, fixed-work loop with cycles+seconds, pointer-chase, copy bandwidth, APERF/MPERF, temperature, PSI). Decide acceptance thresholds from it before any experiment (pre-registered).
-- Decide kernel option K1/K2/K3/K4 (`12` §2). Default K1 + AWS cross-check.
+- Decide kernel option K1/K2/K3/K4 (`12` §2). Default K1 (+ K3 dual-boot entry only if smoke tests fail). AWS dropped (D-31); ask about a second lab host / faculty sponsor (`12` §6b).
 
 ## Week 1 — host bring-up
 - Bare-metal proof (`04` §1) committed. **G0: host is bare metal and has VMX + constant TSC (owner-reported pack says yes; re-verify and store output). Fail → stop (invariant 1); fall back to AWS metal if available.**
@@ -57,7 +57,7 @@ week   0     1        2          3            4           5          6          
 - **G4: tail measurements reach ≥ 1000 samples/config and probe-on/off tails agree within tolerance. Fail → report O5 as exploratory only.**
 
 ## Week 7 — portability + robustness
-- AWS metal run (if available) of calibration + one phase sweep.
+- Second data point (`12` §6b): P-core vs E-core run on HOST-A (H-X) always; another lab host or CloudLab only if available.
 - Three-strikes reruns for every headline finding, in separate boot sessions.
 - Stress the abstraction: guest-side probes in one VM row to measure "guest kernel tax" component of residual.
 
@@ -67,7 +67,7 @@ week   0     1        2          3            4           5          6          
 
 ## Scope ladder (cut from the top when behind)
 ```
-cut first ─► AWS portability run
+cut first ─► second-host run (H-M, other hardware)
              gvisor-kvm, kata-qemu, fc-snapshot rows
              O5 (co-tenancy)
              trajectory replay (keep phase micro-workloads)

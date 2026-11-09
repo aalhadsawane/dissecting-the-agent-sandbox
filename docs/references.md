@@ -93,7 +93,7 @@ Grades: P peer-reviewed · A arXiv · V vendor · C community. "read" = primary 
 - [C] LWN, virtio-fs RFC with smallfile numbers. https://lwn.net/Articles/774495/
 - [C] Kata runtime issue #2138 (virtio-fs fio). https://github.com/kata-containers/runtime/issues/2138
 - [V] Man Group, pip performance analysis. https://www.man.com/technology/improving-python
-- [C, blocked] virtio-fs perf numbers thread (listman.redhat.com not allowed in session; lore mirror 403). https://listman.redhat.com/archives/virtio-fs/2020-December/002384.html
+- [C, read] Goyal, *Some performance numbers for virtiofs, DAX and virtio-9p*, qemu-devel 2020-12-10 (fio only). https://lists.gnu.org/archive/html/qemu-devel/2020-12/msg02704.html . Original listman.redhat.com URL is dead (service shut down).
 
 ## Round 3 (2026-11-09): host platform
 - [V, read] Firecracker kernel support policy (host 5.10 / 6.1 / 6.18). https://github.com/firecracker-microvm/firecracker/blob/main/docs/kernel-policy.md
@@ -106,3 +106,9 @@ Grades: P peer-reviewed · A arXiv · V vendor · C community. "read" = primary 
 - [P, read] Maricq, Duplyakin, Jimenez, Maltzahn, Stutsman, Ricci, *On the Variability of Performance... / Taming Performance Variability*, OSDI 2018. https://www.usenix.org/system/files/osdi18-maricq.pdf
 - [C] AWS bare-metal instance prices (third-party, unverified): https://calculator.holori.com/aws/ec2/c5.metal/us-east-1 , https://cloudprice.net/aws/ec2/instances/c6i.metal , https://www.doit.com/compute/spot/us-east-1/c7i.xlarge
 - [owner] Host evidence pack (sanitized): docs/evidence/host-pack-2026-11-09.md
+
+## Round 4 (2026-11-09)
+- [V, read] CloudLab: who can start a project (faculty/senior staff; students join an advisor's project). https://docs.cloudlab.us/users.html
+- [V, read] Chameleon PI eligibility (students not typically eligible; limited international PIs). https://chameleoncloud.readthedocs.io/en/latest/user/pi_eligibility.html
+- [C, snippets] virtio-fs vs 9p cache-mode / thread-pool / xattr follow-ups (2020-09…11): https://lists.gnu.org/archive/html/qemu-devel/2020-09/msg09360.html , https://lore.kernel.org/qemu-devel/46D726A6-72F3-40FE-9382-A189513F783D@intel.com/ (lore blocks bots; cited via search snippet only)
+- Superseded (kept as record): AWS bare-metal price research in Round 3 list; no credits → not used.

@@ -85,5 +85,15 @@
 | G4 | Who set `isolcpus=2 nohz_full=2 rcu_nocbs=2`, and does anyone use CPU 2 today? | We may be colliding with an existing use | Find out before claiming it |
 | E1 | Run the read-only evidence commands in `12` §9 and paste output (SMT sibling of CPU 2, `kvm_intel` parameters, BTF, cgroup v2/cpuset, storage type, mitigation states, tool versions, TSC adjust, GPU) | Needed to finalize placement, probes and the workload store | Run them |
 | E2 | Is the pasted pack's usernames/endpoint redaction acceptable (we keep only aggregate counts in the public repo)? | Public repo; other people's identifiers | Yes; keep the unredacted pack private |
-| A1 | **Still open.** AWS account type and credits? | Now required for the cross-check (`12` §6), choose an Ice Lake-class metal part if allowed | Tell me |
-| C4 | `listman.redhat.com` is still blocked by this session's network policy despite "full network access" (proxy CONNECT 502; lore.kernel.org returns 403) | Only the virtio-fs perf thread needs it | Paste the text, or allow the host in the session settings |
+| A1 | ~~AWS account type and credits~~ **Closed 2026-11-09: AWS student/builder account with no credits → AWS dropped (D-31)** | — | — |
+| C4 | ~~listman blocked~~ **Closed 2026-11-09:** listman.redhat.com was shut down by Red Hat; lore blocks bots. I read the thread via a qemu-devel mirror (`11` §2.4). Nothing needed from the owner | — | — |
+
+## Round 4 — new questions (no AWS, `12` §6b)
+
+| ID | Question | Why | Recommendation |
+|---|---|---|---|
+| X1 | Does the lab (or BITS Goa) have **another bare-metal machine**, ideally a server Xeon/EPYC, that you may use or even reboot? (The host pack suggests the lab runs more than one server.) | Only free route to a different CPU and to a mitigation-toggle experiment (H-M) without touching the shared HOST-A | Ask the admin |
+| X2 | Do you have a **faculty advisor/sponsor** who could create a CloudLab (or Chameleon) project and add you? Is your institution accepted? (CloudLab page doesn't say; Chameleon limits international PIs to those with US collaborations.) | Exclusive server hardware, root, own kernel, free for research/education | Ask your paper's supervisor |
+| X3 | Accept H-X (P-core vs E-core on HOST-A) as the baseline second data point, plus an explicit single-host claim? | Zero cost, no reboot; weak proxy | Yes |
+| X4 | Accept a K3 dual-boot entry (Firecracker-validated 6.1/6.18) only if week-1 smoke tests on 5.15 fail? Requires admin/physical rollback plan | Without AWS there is no independent kernel to cross-check on | Yes, conditionally |
+| E1 (repeat) | Run the read-only commands in `12` §9 and paste output | Still needed | Run them |

@@ -11,6 +11,7 @@ Where does an agent sandbox's time actually go — at the isolation boundary, pe
 - **First result (week 4):** a folk-number audit — re-measure published gVisor/Firecracker/vendor numbers with pinned modern versions and explain the gaps.
 - **Round 2 (stateful sandboxes):** agent sandboxes are long-lived stateful sessions, not FaaS. Vendors converge on block-device FS for VM sandboxes. State ops (checkpoint/fork) and durability semantics are new first-class variables. "FS dominates clone/install" is withdrawn: graded evidence in [`docs/11-stateful-fs-path.md`](docs/11-stateful-fs-path.md).
 - **Round 3 (host pack):** bare metal confirmed, but shared (33 sessions), hybrid, turbo-on, kernel 5.15 off Firecracker's validated host kernels, VMScape IBPB mitigation active, KVM vPMU off. Earlier "vhost needs ≥ 6.4" claim withdrawn. Noise is measured and gated, not assumed ([`docs/12-host-platform-analysis.md`](docs/12-host-platform-analysis.md)).
+- **Round 4:** no AWS credits → AWS dropped; second data point must come from a lab machine, a faculty-sponsored CloudLab project, or P-core vs E-core on the same host (H-X). virtio-fs thread read via mirror: results vary ~5–8× with cache mode, so every virtio-fs row records its knobs.
 - **Blocking:** home server specs and the answers in [`docs/09-open-questions.md`](docs/09-open-questions.md).
 
 ## Documents (read in order)

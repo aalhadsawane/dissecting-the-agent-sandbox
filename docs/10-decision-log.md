@@ -34,3 +34,8 @@ Format: ID · date · decision · evidence · reversible?  Changes to pre-regist
 | D-28 | 2026-11-09 | AWS x86 metal repurposed as a required cross-check of structure (A) vs unit cost (C), choosing a part whose mitigation state differs from HOST-A | Hybrid client CPU limits external validity | Yes (A1) |
 | D-29 | 2026-11-09 | DoD wording: reproducibility claimed for structure/ordering and via CI regeneration from raw data, not for absolute times across hardware classes | `12` §6 | Yes |
 | D-30 | 2026-11-09 | Global host changes (governor, turbo, SMT, CPU hotplug, cgroup partitions, reboot, boot params) only with consent in announced windows; otherwise measure the confound | `12` §7 | No |
+| D-31 | 2026-11-09 | AWS dropped: owner has an AWS student/builder account with no credits. D-28 (AWS cross-check) superseded | Owner message 2026-11-09 | Yes (if a sponsor/lab host appears) |
+| D-32 | 2026-11-09 | Second-data-point strategy: H-X (P-core vs E-core on HOST-A) + explicit single-host claim; pursue another lab host or a faculty-sponsored CloudLab project only if available | `12` §6b; CloudLab/Chameleon require a faculty/PI | Yes |
+| D-33 | 2026-11-09 | Every virtio-fs row records cache mode, xattr, DAX (window), thread-pool size, virtiofsd version, kernels | Goyal 2020 fio spread (~8× seqread, ~5× randrw across modes) | No |
+| D-34 | 2026-11-09 | Do not work around bot protection (lore.kernel.org); use legitimate mirrors or ask the owner | Tool-use hygiene | No |
+| D-35 | 2026-11-09 | Withdrew my round-3 diagnosis that listman was blocked by session policy; the service was shut down | Owner report; DNS ENOTFOUND consistent | No |

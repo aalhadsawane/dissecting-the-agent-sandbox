@@ -86,6 +86,21 @@ Evidence for each segment:
 - **Does not show:** what *fraction of agent session time* those operations take. Every agent-level number (§3) points away from clone/install.
 - **Quality gap:** the only head-to-head that includes metadata ops and current versions is a vendor blog without methodology. Peer-reviewed cross-runtime FS studies use 2020-era versions and bulk I/O only. **That is a real gap we can fill.**
 
+### 2.4 virtio-fs results depend on at least four knobs (added 2026-11-09)
+
+Source: Goyal, *Some performance numbers for virtiofs, DAX and virtio-9p*, qemu-devel, 2020-12-10 [C, mirror read at lists.gnu.org]. **Setup:** Fedora 29 host, 376 GiB RAM, 2×20 cores×2 threads, host SSD; VM 32 vCPU / 64 GB / 16 GB DAX window; unmerged DAX/killpriv/thread-pool patches; virtiofsd `-o cache=none --thread-pool-size=0`; fio 4K, iodepth 16, 3-run averages. **fio only — the thread contains no metadata (create/stat/rename) results**, so it does not test the metadata claim in §2.1; that evidence is still the 2018 LWN smallfile numbers and Modal's blog.
+
+| Workload (psync, 4 KiB) | 9p-none | vtfs-none | vtfs-none-dax | vtfs-auto | vtfs-always |
+|---|---|---|---|---|---|
+| seqread (MB/s) | 98.6 | 98.4 | 660.3 | 650.0 | 671.3 |
+| randread | 101.5 | 104.9 | 662.5 | 77.9 | 79.3 |
+| seqwrite | 93.2 | 95.3 | 486.5 | 78.6 | 75.9 |
+| randrw read/write | 70.2/23.5 | 75.8/25.4 | 403.2/134.7 | 38.1/12.7 | 40.7/13.6 |
+
+Reading: the same filesystem moves by ~8× on seqread and ~5× on randrw depending on cache mode and DAX; `cache=auto/always` *halves* randrw versus `cache=none` (the thread attributes write slowness to a per-write GETXATTR via `file_remove_privs()` under cache=auto). Follow-up threads (search snippets only, 2020-09 to 2020-11, Kata/Intel and Red Hat engineers) report: `--thread-pool-size=0` beat 1 or 64 by ~35–40%; 9p still ~30% better than virtiofs on a mixed r/w job; the maintainers called the first Kata comparison "not apples-to-apples", and proposed mapping 9p:none↔virtiofs:none and 9p:loose↔virtiofs:always.
+
+**Rule added (D-33):** every virtio-fs row records `cache=`, `xattr`, DAX on/off + window size, `--thread-pool-size`, `virtiofsd` version, and guest/host kernel. A "Kata virtio-fs is X× slower" number without these is not comparable. Strengthens the case for block-backed primary rows (F1).
+
 ## 3. Where agent sessions spend tool time (the counter-evidence)
 
 | Source | Finding | Implication |
@@ -183,4 +198,4 @@ What is newly risky:
 | E2B storage internals | Read `e2b-dev/infra` source (orchestrator, NBD, CoW) |
 | gVisor numbers for overlay/directfs on agent workloads | Measure; vendor blogs give only fsstress / Abseil / "12%" |
 | DSec / DeltaBox / Crab full text beyond first 100k chars | Read remaining sections |
-| `listman.redhat.com` (virtio-fs perf thread) blocked by this session's network policy; lore.kernel.org mirror returned 403 | Owner can allow the host, or read it outside the session |
+| virtio-fs perf thread | **Resolved 2026-11-09:** `listman.redhat.com` no longer exists (Red Hat shut it down); `lore.kernel.org` blocks automated clients. Read the qemu-devel cross-post via `lists.gnu.org` instead (§2.4). It has fio only, no metadata data |

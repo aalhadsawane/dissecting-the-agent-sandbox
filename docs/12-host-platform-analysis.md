@@ -12,7 +12,7 @@ Written 2026-11-09 from the owner's evidence pack (`docs/evidence/host-pack-2026
   2. *"Upgrade to the 6.8 HWE kernel to fix things"* — doesn't help the main consumer. Firecracker's **validated host kernels are 5.10, 6.1 and 6.18** [V]. Neither 5.15 nor 6.8 is on the list.
   3. *"We can use guest-side hardware counters for the guest-kernel tax"* (`03` §6, plan wk 7) — KVM **disables the vPMU on Intel hybrid hosts**, so guests get no PMU on this CPU [K/C].
 - **A new variable I hadn't modeled: VMScape mitigation.** The pack shows `Vmscape (IBPB before exit to userspace)`. The kernel conditionally issues IBPB on the first return to userspace after a VM exit. That inflates exactly the exit classes that go to a userspace VMM (and, I predict, gVisor-KVM's host calls), so the unit cost `C_c` depends on mitigation state. It must be pinned, reported, and ideally varied (H-M, exploratory).
-- **External validity is the biggest scientific weakness of this host.** A hybrid client Alder Lake with shallow C-states (C1/C2 only) and unlocked-by-nobody BIOS isn't what vendors run. The brief's "stranger with the same hardware class reproduces" definition needs rewording, and the AWS x86 metal check moves from "nice to have" to "needed" (if the account allows; A1 is still unanswered).
+- **External validity is the biggest scientific weakness of this host.** A hybrid client Alder Lake with shallow C-states (C1/C2 only) and a BIOS nobody can change remotely isn't what vendors run. **Update 2026-11-09 (round 4): the owner has no AWS credits, so there is no paid second host.** The cross-check options are now: another machine in the owner's lab, a faculty-sponsored CloudLab/Chameleon project, a within-host P-core vs E-core comparison, or an explicit single-host claim (§6b).
 - **Governance, not engineering, is the critical path:** a pending reboot on a shared box, runtime-global knobs (turbo, governor, SMT, CPU hotplug), root-daemon installs (containerd, Docker/Kata/gVisor) — all need the other tenants' consent (§7).
 
 ---
@@ -21,7 +21,7 @@ Written 2026-11-09 from the owner's evidence pack (`docs/evidence/host-pack-2026
 "Agree with all the recs" resolves, as **decided** (logged in `10`, D-19…):
 S1 state ops in scope (measure native mechanisms only) · S2 new phase set · S3 prebuilt-image SWE/RL + tree-search primary, fresh-repo as sensitivity · S4 O1 crossover curve · S5 cost per unit of workload demand · S6 CVM out · F1 block-backed VM rows primary · F2 durability held equal · F3 lazy-loading = stated limitation (emulation stretch) · F4 `runc-idmap` optional, init phase only · W1 thin trace-replay harness (scoped exception) · W2 public traces first · W3 Python + Node core + one compiled control · R1 gVisor systrap + KVM with default FS · R2 Cloud Hypervisor only · R3 Firecracker driven directly · A2 blog wk 4 / arXiv wk 8 · A3 vendors may be named, factual tone, advance notice · A4 repo public from day one.
 
-**Still open:** A1 (AWS account type/credits), C1–C3 (citations), C4 (network host, see §8), W2's GPU sub-question (pack doesn't mention a GPU; `nomodeset` suggests none; ask).
+**Still open:** C1–C3 (citations), W2's GPU sub-question (pack doesn't mention a GPU; `nomodeset` suggests none; ask). **Closed in round 4:** A1 (no AWS credits → AWS dropped, D-31); C4 (the virtio-fs thread was read through a qemu-devel mirror, §8).
 
 ## 1. Assumption audit
 
@@ -74,9 +74,9 @@ S1 state ops in scope (measure native mechanisms only) · S2 new phase set · S3
 | K1: stay on 5.15 (after the already-pending reboot to -202) | Low; reboot already owed | No new risk to other users; Ubuntu security backports include VMScape (O) | Firecracker unvalidated; must state it in the paper |
 | K2: Ubuntu HWE 6.8 | Reboot + package install | Distro-supported | Still off Firecracker's matrix; changes mitigation behavior; no clear gain |
 | K3: self-built or mainline 6.1 LTS / 6.18 | Reboot + build + boot-loader work on a shared box | On Firecracker's matrix | Highest governance cost; Secure Boot is disabled (O) so unsigned kernels would boot; rollback plan needed |
-| K4: do the primary study on AWS x86 metal where we control the kernel | Credits | Exclusive, server CPU, any kernel | Credits are small; account may not allow metal (A1) |
+| ~~K4: primary or cross-check work on AWS x86 metal~~ | **Dropped 2026-11-09: no credits (D-31)** | — | — |
 
-**Recommendation (to be confirmed by owner, Q-K1):** start on **K1** (no extra disruption), declare Firecracker's off-matrix status, and plan **K4 as a required cross-check** on a Firecracker-validated kernel. Choose **K3 only** if the cross-check shows the 5.15 results are a kernel artifact. *Critique of my own rec:* K1 risks building a month of data on a configuration Firecracker's authors don't test; the cheap hedge is to run the week-1 smoke tests (boot, snapshot, balloon, block I/O) on 5.15 *before* committing and record any failures as findings.
+**Recommendation (to be confirmed by owner, Q-K1):** start on **K1** (no extra disruption) and declare Firecracker's off-matrix status. Run the week-1 smoke tests (boot, snapshot full/diff, balloon, block I/O) on 5.15 *before* committing and record any failures as findings. Choose **K3** (a Firecracker-validated 6.1 or 6.18 kernel, ideally as an extra boot entry so 5.15 stays the default) only if smoke tests fail or a result looks like a kernel artifact. *Critique of my own rec:* K1 risks building a month of data on a configuration Firecracker's authors don't test, and without AWS there is no independent kernel to cross-check on. K3 as a dual-boot entry is therefore the realistic hedge, but it needs admin/physical access and a rollback plan (§7).
 
 ## 3. Placement, isolation and frequency on a shared hybrid host
 
@@ -132,9 +132,9 @@ Maricq et al. (OSDI'18, 835 CloudLab servers, ~900k data points, exclusive acces
 **Implications for the study (I = inference; each is testable):**
 1. *Which exits pay:* in-kernel-handled exits (EPT violation, HLT, timer MSR, ioeventfd-signalled doorbells) don't return to userspace → no IBPB. Exits handled by the userspace VMM (Firecracker/CHV/QEMU device emulation such as PIO or MMIO not covered by ioeventfd) do (I).
 2. *gVisor-KVM:* the Sentry runs in guest mode and reaches the host by exiting to the host-side `runsc` process → every host call in the KVM platform may incur the IBPB (I). That would raise exactly the cost of the "gVisor-KVM" row that the docs recommend for bare metal. Systrap is not affected in the same way because it is not a VM.
-3. *Comparability:* AWS Ice Lake-class instances are, per the kernel doc, not vulnerable; Skylake/Cascade Lake are → cross-host comparisons of `C_c` mix mitigation regimes unless reported (the manifest must include the sysfs state).
+3. *Comparability:* per the kernel doc, Ice Lake-class parts are not vulnerable while Skylake/Cascade Lake and Alder Lake+ are → any cross-host comparison of `C_c`, and any comparison with published numbers, mixes mitigation regimes unless the sysfs state is reported (the manifest must include it).
 4. *Unit-of-account:* split classes by **handler locus**: `KERNEL-handled` vs `USERSPACE-handled` exits. This was implicit; now explicit in `03` (to update).
-5. *Experiment (exploratory H-M):* measure `C` for userspace-handled exits with `vmscape=ibpb` (current) vs `off`. Needs a reboot with a changed cmdline → only feasible if a reboot window is granted anyway; otherwise report as an unquantified caveat. *Self-critique:* turning a security mitigation off on a shared multi-user host is a security-relevant change; do it only in a bounded window with the owner/admin's consent, and prefer doing it on AWS metal where we are the only tenant.
+5. *Experiment (exploratory H-M):* measure `C` for userspace-handled exits with `vmscape=ibpb` (current) vs `off`. Needs a reboot with a changed cmdline → only with admin consent on a shared host, or on another host we control (§6b); otherwise report as an unquantified caveat. *Self-critique:* turning a security mitigation off on a shared multi-user host is security-relevant; only in a bounded window with the admin's consent. The no-reboot alternative is §6b's P-core vs E-core comparison, which varies the mitigation set (RFDS) and microarchitecture without a boot change.
 
 ## 6. External validity: hardware class
 
@@ -148,9 +148,26 @@ Maricq et al. (OSDI'18, 835 CloudLab servers, ~900k data points, exclusive acces
 | Tenancy | Shared, 33 sessions | Exclusive metal for the study; production = multi-tenant |
 
 Consequences:
-- Absolute numbers will not transfer; **ratios and class-structure (A, which exits occur) are more likely to transfer than C (unit costs)**. *Hypothesis, not fact:* test with the AWS x86 metal cross-check by comparing A across hosts (should be nearly identical) and C (should differ). This is a stronger, more falsifiable use of the credits than "validate the home numbers".
+- Absolute numbers will not transfer; **ratios and class-structure (A, which exits occur) are more likely to transfer than C (unit costs)**. *Hypothesis, not fact.* Without a second host this can only be tested within the host (P vs E cores, §6b) or against published counts; the paper must say that cross-host transfer is untested.
 - Redefine the DoD item "a stranger with the same hardware class": **(a)** same *class of host* = Intel VMX, bare metal, invariant TSC, stated mitigation state; **(b)** the headline table is regenerated from the committed raw data in CI, and the *runbook* regenerates raw data on any such host; **(c)** we claim reproducibility of *structure and ordering*, not of absolute times.
-- AWS candidates (third-party prices, unverified, on-demand us-east-1): `c5.metal` ≈ $4.08/h (96 vCPU, 192 GiB), `c7i.metal-24xl` ≈ $4.28/h, `c6i.metal` ≈ $5.44/h, `m5.metal` ≈ $4.15–4.61/h (sources disagree). With $50–100 credits that is roughly 10–25 hours of metal, **only if** the account type allows metal (A1). Pick the instance whose VMScape/BHI status differs from HOST-A on purpose (e.g. an Ice Lake-class part, `c6i.metal`) to test the mitigation hypothesis for free.
+- ~~AWS candidates~~ **Removed 2026-11-09:** the owner has no AWS credits. The price research (third-party figures, c5/c6i/c7i/m5 metal at roughly $4–5.4/h) is kept in `references.md` only as a record of why a paid cross-check was out of reach.
+
+## 6b. Zero-cash options for a second data point (round 4, 2026-11-09)
+
+Owner: no AWS credits; AWS dropped (D-31). What can still address "one hybrid client CPU is not enough"?
+
+| Option | Gives | Cost / blocker | Evidence |
+|---|---|---|---|
+| X1: another bare-metal machine in the owner's lab | A different CPU (ideally a server Xeon/EPYC) and maybe a kernel we may change | Needs the admin's consent; the pack suggests the lab runs more than one server (a tenant's job reports to a different lab host) — **ask what exists** | O (indirect) |
+| X2: CloudLab project (exclusive bare metal, free for research/education) | Server CPUs, root, own kernel, exclusive use; the platform Maricq et al. measured | Students **cannot lead a project**; "ask their advisor or course instructor to create a new project"; staff review "may take a few days"; project leader approves each member. Whether non-US institutions are accepted is **not stated** on the page I read | V (docs.cloudlab.us/users.html) |
+| X3: Chameleon bare metal | Similar | PI status: students "not typically considered eligible"; international PIs only "with ongoing, active collaborations with scientists in the US"; a faculty advisor can create a project and add the student; startup allocation 20,000 SU/6 months (1 SU = 1 hour of a base bare-metal server); whether use is free was **not stated** | V (chameleoncloud.readthedocs.io PI eligibility; FAQ via search) |
+| X4: P-core vs E-core on HOST-A | Two microarchitectures (Golden Cove vs Gracemont) and, I believe, different mitigation sets (RFDS affects Atom-class cores only — **my knowledge, verify** against the kernel's RFDS doc and the per-core sysfs) on the same board, kernel and memory | Free, no reboot. Caveat: same memory system, same kernel; vPMU off; E-cores have no SMT; is a *weak* proxy for a different vendor/microarchitecture | I |
+| X5: single-host claim, stated plainly | — | Honest, cheap; limits generality | — |
+| X6: compare our A (HSE counts) against exit/syscall counts published for other hardware | A cross-check of *structure* only | Few papers report per-class exit counts (2609.04478 discusses exit types qualitatively) | A |
+
+**Recommendation:** run **X4** (cheap, falsifiable: "A is core-type-invariant, C is not") and **X5** as the baseline claim; ask the owner about **X1**; pursue **X2** only if a faculty sponsor exists and can approve (the owner's paper on scheduling and attestation suggests there may be one → ask). Reserve H-M for X1/X2; do not do it on the shared HOST-A without admin consent.
+
+**New exploratory hypothesis H-X:** on HOST-A, for a fixed sandbox workload pinned to P-core threads vs E-core threads, the per-class HSE counts `A_c` agree within bootstrap CIs, while unit costs `C_c` differ. *Disconfirmed if:* `A_c` itself differs (then structure is not hardware-independent, which would be a surprising and important finding), or `C_c` doesn't differ (then C may transfer better than assumed). *Caveats:* E-cores may have different KVM behavior and timers; kernel scheduling must be prevented from migrating vCPUs.
 
 ## 7. Governance: what needs other people's consent
 
@@ -168,7 +185,11 @@ Consequences:
 
 *Critique of the plan:* the earlier docs wrote "pin governor, turbo off, SMT fixed" as if free. On this host each is a negotiation. The honest fallback is to **measure the confounds (APERF/MPERF, canaries, PSI) rather than remove them**, and to say so.
 
-## 8. Network access (owner said "full network access")
+## 8. Network access (owner said "full network access") — RESOLVED in round 4
+Round-4 outcome: `listman.redhat.com` was shut down by Red Hat (owner), so its failure is expected and permanent, not a policy block. `lore.kernel.org` rejects automated clients as bots. I did **not** try to work around that. The same virtio-fs thread was cross-posted to qemu-devel and is readable at `lists.gnu.org` (see `11` §2.4). Nothing is needed from the owner for virtio-fs. Original round-3 text follows for the record.
+
+### (round-3 text, superseded — and partly wrong)
+**Correction:** I attributed the failure to the session's network policy. That was a misdiagnosis: the tool's error text suggested it, but the actual cause is that the service no longer exists (DNS `ENOTFOUND`, proxy 502). Lesson: an error message that offers one explanation isn't evidence for it.
 Verified this session: `usenix.org` PDFs download; `lore.kernel.org` returns HTTP 403; **`listman.redhat.com` still fails (proxy CONNECT 502)**, and `WebFetch` reports the host as outside the session's allowed domains. So the owner's statement doesn't (yet) cover that host in *this* session. Not blocking: the virtio-fs thread is a secondary source. Action: owner either allows `listman.redhat.com` in the session network settings or pastes the text.
 
 ## 9. Evidence requests (run on HOST-A, paste output; read-only)
