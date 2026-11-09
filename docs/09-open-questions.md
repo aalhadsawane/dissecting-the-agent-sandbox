@@ -1,4 +1,6 @@
-# 09 — Questions for the owner (consolidated, round 2)
+# 09 — Questions for the owner (consolidated)
+
+> **Status 2026-11-09:** owner replied "agree with all the recs" and supplied the host evidence pack. Groups **S, F, W, R, A2–A4** are **decided** (`10` D-19). **H1–H5 answered** (see `docs/evidence/host-pack-2026-11-09.md`, analysis `12`). **Open:** A1, C1–C3, C4 (see below), W2-GPU, and the new round-3 questions at the end of this file.
 
 **TL;DR**
 - 22 questions in 6 groups. **Blocking before week 1:** H1–H4 (hardware), S1 (stateful scope), F1 (FS matrix), A1 (AWS account).
@@ -69,3 +71,19 @@
 | C2 | Exact refs: Zhang et al. I/O virtualization (2010); "Hofstra multi-threaded overhead diagnosis" |
 | C3 | Origin of "178k production sessions" for AgentSysBench (not seen in the part read) |
 | C4 | Optional: allow `listman.redhat.com` in this session's network settings (virtio-fs performance thread), or read it yourself |
+
+---
+
+## Round 3 — new questions from the host analysis (`12`)
+
+| ID | Question | Why (evidence) | Recommendation |
+|---|---|---|---|
+| K1 | Kernel: stay on 5.15 (after the pending reboot to -202), HWE 6.8, self-built 6.1/6.18, or do the primary kernel-sensitive work on AWS? | Firecracker validates host 5.10/6.1/6.18 only; 5.15 and 6.8 are off-matrix (`12` §2) | Stay on 5.15, declare it, smoke-test in week 1, AWS cross-check on a validated kernel |
+| G1 | Who must consent to: installing runtimes, claiming cores via cpuset partitions, taking CPU 2's SMT sibling offline, governor/turbo windows, a memory cap, one scheduled reboot? Is there a lab admin and a mailing list/etiquette? | 33 sessions from 5 other accounts; all of these are host-wide (`12` §7) | You get written OK from the admin and an announcement for each window |
+| G2 | Memory cap for our tmpfs + guests (suggest ≤ 48 GiB, i.e. well under the ~116 GiB available) and a CPU budget (suggest CPU 2 + its sibling + a cpuset of ~4 other P-core threads)? | Shared box; Maricq-style gating needs stable resources | Agree numbers up front |
+| G3 | May we change the boot cmdline once (e.g. `vmscape=off`) for H-M? Or only do that on AWS? | It is a security-relevant change on a shared host | Only on AWS metal |
+| G4 | Who set `isolcpus=2 nohz_full=2 rcu_nocbs=2`, and does anyone use CPU 2 today? | We may be colliding with an existing use | Find out before claiming it |
+| E1 | Run the read-only evidence commands in `12` §9 and paste output (SMT sibling of CPU 2, `kvm_intel` parameters, BTF, cgroup v2/cpuset, storage type, mitigation states, tool versions, TSC adjust, GPU) | Needed to finalize placement, probes and the workload store | Run them |
+| E2 | Is the pasted pack's usernames/endpoint redaction acceptable (we keep only aggregate counts in the public repo)? | Public repo; other people's identifiers | Yes; keep the unredacted pack private |
+| A1 | **Still open.** AWS account type and credits? | Now required for the cross-check (`12` §6), choose an Ice Lake-class metal part if allowed | Tell me |
+| C4 | `listman.redhat.com` is still blocked by this session's network policy despite "full network access" (proxy CONNECT 502; lore.kernel.org returns 403) | Only the virtio-fs perf thread needs it | Paste the text, or allow the host in the session settings |

@@ -22,3 +22,15 @@ Format: ID · date · decision · evidence · reversible?  Changes to pre-regist
 | D-16 | 2026-11-08 | Block-backed VM configs primary; virtio-fs secondary; gVisor defaults (overlay root:self, directfs) primary | Vendor convergence on block (Modal, Tensorlake, E2B, DSec) | Yes (Q-R2) |
 | D-17 | 2026-11-08 | State ops measured with native mechanisms; no new C/R design | DeltaBox/Crab occupy design space | Yes (Q-S1) |
 | D-18 | 2026-11-08 | Novelty restated: current versions + metadata/agent workloads + per-sandbox boundary attribution + lifecycle/state ops + controlled FS/durability | VEE'20, Middleware'21, MDPI 2023, Modal 2026 exist | No |
+| D-19 | 2026-11-09 | Owner agreed with all recommendations in `09` (S1–S6, F1–F4, W1–W3, R1–R3, A2–A4). A1, C1–C3 and W2-GPU remain open | Owner message 2026-11-09 | — |
+| D-20 | 2026-11-09 | Host evidence accepted as owner-reported, stored sanitized in `docs/evidence/` (HOST-A) | Pack not independently verifiable from this session | No |
+| D-21 | 2026-11-09 | CVM row closed (no TDX/SEV/IOMMU on HOST-A) | Pack H5 | No |
+| D-22 | 2026-11-09 | Withdrew "vhost attribution needs kernel ≥ 6.4"; the 5.15 vhost worker joins the owner's cgroups via `cgroup_attach_task_all`; cgroup must exist before the VMM opens the device (inference, to test) | v5.15 `vhost.c` | No |
+| D-23 | 2026-11-09 | Kernel decision deferred to owner (K1 stay on 5.15 [rec] / K2 HWE 6.8 / K3 self-built 6.1 or 6.18 / K4 AWS). Firecracker validates host 5.10/6.1/6.18 only | `kernel-policy.md` | Yes (Q-K1) |
+| D-24 | 2026-11-09 | Noise is measured, not assumed: ≥ 7-day canary baseline and pre-registered acceptance gates before any experiment | Maricq et al. OSDI'18; shared host | No |
+| D-25 | 2026-11-09 | Exit classes split by handler locus (KERNEL- vs USERSPACE-handled); mitigation state in every manifest | VMScape kernel doc | No |
+| D-26 | 2026-11-09 | Sandbox threads pinned to P-core threads; neighbor placement (SMT sibling / P-core / E-core) is a designed O5 factor; no guest-PMU claims | Hybrid topology; KVM vPMU disabled on hybrid | Yes |
+| D-27 | 2026-11-09 | No other person's identifiers, hostnames or internal endpoints in the public repo | Pack contained other tenants' account names and an internal endpoint | No |
+| D-28 | 2026-11-09 | AWS x86 metal repurposed as a required cross-check of structure (A) vs unit cost (C), choosing a part whose mitigation state differs from HOST-A | Hybrid client CPU limits external validity | Yes (A1) |
+| D-29 | 2026-11-09 | DoD wording: reproducibility claimed for structure/ordering and via CI regeneration from raw data, not for absolute times across hardware classes | `12` §6 | Yes |
+| D-30 | 2026-11-09 | Global host changes (governor, turbo, SMT, CPU hotplug, cgroup partitions, reboot, boot params) only with consent in announced windows; otherwise measure the confound | `12` §7 | No |

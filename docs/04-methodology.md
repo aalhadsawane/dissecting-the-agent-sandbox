@@ -21,6 +21,8 @@ grep -o -E 'constant_tsc|nonstop_tsc' /proc/cpuinfo | sort -u → both
 ```
 Counter-example on record: this planning session's container prints `docker`, has the `hypervisor` flag, and its kernel cmdline contains `--firecracker-init` — it is a Firecracker guest without `/dev/kvm`. It fails every check, as expected.
 
+**Host-specific additions (2026-11-09, `12`):** the home server is shared (33 sessions), hybrid (8P+4E), turbo-on/`powersave`, C1/C2-only, and carries the VMScape IBPB mitigation. Therefore: (a) "pin governor/turbo/SMT" means *pin if consent is granted for a window, otherwise measure* APERF/MPERF per run per core; (b) all sandbox threads pinned to P-core threads, core IDs recorded; (c) every batch bracketed by **canary benchmarks** with a pre-registered acceptance gate (`12` §4) — flagged batches are re-run and both versions kept; (d) `memory.swap.max=0` on all sandbox cgroups; (e) manifest records `/sys/devices/system/cpu/vulnerabilities/*`, `cpuidle` states, `kvm_intel` module parameters, thermal readings, and the Firecracker-supported-kernel status (off-matrix on 5.15/6.8).
+
 Pinned environment manifest (published per run):
 - Kernel version + full `.config` hash + cmdline; microcode version; BIOS version.
 - CPU governor (`performance`), turbo/boost state (off), SMT state (fixed), C-states policy (fixed; affects HLT exit cost), THP mode, KSM off, swap off, NUMA policy, `irqbalance` off.

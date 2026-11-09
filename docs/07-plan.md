@@ -20,9 +20,14 @@ week   0     1        2          3            4           5          6          
 - Read the top-3 items of the reading queue (`01-literature.md` §10).
 - Freeze hypotheses/thresholds (`05`), taxonomy (`03` §2), runtime matrix (`04` §2). Commit = pre-registration timestamp.
 
+## Week 0b — host noise baseline and consent (added 2026-11-09; `12` §3–§4, §7)
+- Owner runs the read-only evidence requests (`12` §9) and obtains consent/windows from the other tenants for: core claims (cpuset partitions), governor/turbo windows, memory cap, runtime installs, one scheduled reboot.
+- Start the **canary baseline** (≥ 7 days: null-syscall, fixed-work loop with cycles+seconds, pointer-chase, copy bandwidth, APERF/MPERF, temperature, PSI). Decide acceptance thresholds from it before any experiment (pre-registered).
+- Decide kernel option K1/K2/K3/K4 (`12` §2). Default K1 + AWS cross-check.
+
 ## Week 1 — host bring-up
-- Bare-metal proof (`04` §1) committed. **G0: host is bare metal and has VMX/SVM + constant TSC. Fail → stop (invariant 1); fall back to AWS metal if available.**
-- Pinned kernel + runtimes installed; each runtime row boots and runs `true` and a 1-file Python script.
+- Bare-metal proof (`04` §1) committed. **G0: host is bare metal and has VMX + constant TSC (owner-reported pack says yes; re-verify and store output). Fail → stop (invariant 1); fall back to AWS metal if available.**
+- Pinned kernel + runtimes installed; each runtime row boots and runs `true` and a 1-file Python script. **Smoke tests on the off-matrix kernel (5.15) for Firecracker: boot, block I/O, snapshot full/diff, balloon; every failure is recorded as a finding (`12` §2).**
 - tmpfs layout; local git/PyPI/npm mirrors; no-internet run mode.
 - Environment manifest generator design (manual checklist acceptable at first).
 

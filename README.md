@@ -10,6 +10,7 @@ Where does an agent sandbox's time actually go — at the isolation boundary, pe
 - **Unit of account:** the *host-serviced event* (HSE), cost = demand × amplification × unit cost, plus a reported residual for overhead that never crosses the boundary (2-D page walks, guest-kernel work).
 - **First result (week 4):** a folk-number audit — re-measure published gVisor/Firecracker/vendor numbers with pinned modern versions and explain the gaps.
 - **Round 2 (stateful sandboxes):** agent sandboxes are long-lived stateful sessions, not FaaS. Vendors converge on block-device FS for VM sandboxes. State ops (checkpoint/fork) and durability semantics are new first-class variables. "FS dominates clone/install" is withdrawn: graded evidence in [`docs/11-stateful-fs-path.md`](docs/11-stateful-fs-path.md).
+- **Round 3 (host pack):** bare metal confirmed, but shared (33 sessions), hybrid, turbo-on, kernel 5.15 off Firecracker's validated host kernels, VMScape IBPB mitigation active, KVM vPMU off. Earlier "vhost needs ≥ 6.4" claim withdrawn. Noise is measured and gated, not assumed ([`docs/12-host-platform-analysis.md`](docs/12-host-platform-analysis.md)).
 - **Blocking:** home server specs and the answers in [`docs/09-open-questions.md`](docs/09-open-questions.md).
 
 ## Documents (read in order)
@@ -27,6 +28,8 @@ Where does an agent sandbox's time actually go — at the isolation boundary, pe
 | 09 | [open questions](docs/09-open-questions.md) | For the owner, with recommendations |
 | 10 | [decision log](docs/10-decision-log.md) | Decisions and their evidence |
 | 11 | [stateful FS path](docs/11-stateful-fs-path.md) | Round 2: stateful sandboxes, FS data path evidence (graded), state ops, durability |
+| 12 | [host platform analysis](docs/12-host-platform-analysis.md) | Round 3: the real hardware vs earlier assumptions (noise, kernel, hybrid CPU, VMScape, governance) |
+| — | evidence | [host pack, sanitized](docs/evidence/host-pack-2026-11-09.md) |
 | — | [references](docs/references.md) | Links + verification status |
 
 ## Invariants (from the brief, non-negotiable)

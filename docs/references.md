@@ -94,3 +94,15 @@ Grades: P peer-reviewed · A arXiv · V vendor · C community. "read" = primary 
 - [C] Kata runtime issue #2138 (virtio-fs fio). https://github.com/kata-containers/runtime/issues/2138
 - [V] Man Group, pip performance analysis. https://www.man.com/technology/improving-python
 - [C, blocked] virtio-fs perf numbers thread (listman.redhat.com not allowed in session; lore mirror 403). https://listman.redhat.com/archives/virtio-fs/2020-December/002384.html
+
+## Round 3 (2026-11-09): host platform
+- [V, read] Firecracker kernel support policy (host 5.10 / 6.1 / 6.18). https://github.com/firecracker-microvm/firecracker/blob/main/docs/kernel-policy.md
+- [V, read] Firecracker production host setup (SMT off, swap off, KSM off recommendations; no CPU-model list). https://github.com/firecracker-microvm/firecracker/blob/main/docs/prod-host-setup.md
+- [K, read] Linux kernel docs, VMSCAPE (affected CPUs, IBPB before first exit to userspace, `vmscape=`). https://docs.kernel.org/admin-guide/hw-vuln/vmscape.html
+- [C, snippet] Phoronix, Intel patches to reduce VMSCAPE mitigation cost on Alder Lake+. https://www.phoronix.com/news/Intel-Less-Cost-VMSCAPE
+- [K, read] Linux cgroup v2 docs, cpuset `cpuset.cpus.partition` (root/isolated/member). https://docs.kernel.org/admin-guide/cgroup-v2.html
+- [K, read] Linux v5.15 `drivers/vhost/vhost.c` (kthread worker, `cgroup_attach_task_all`). https://raw.githubusercontent.com/torvalds/linux/v5.15/drivers/vhost/vhost.c
+- [C, snippet] KVM: disable vPMU on Intel hybrid hosts, lkml 2023. https://lkml.iu.edu/hypermail/linux/kernel/2302.0/05143.html ; KVM Forum 2024 talk (hybrid still unsupported). https://pretalx.com/kvm-forum-2024/talk/NYWTMH
+- [P, read] Maricq, Duplyakin, Jimenez, Maltzahn, Stutsman, Ricci, *On the Variability of Performance... / Taming Performance Variability*, OSDI 2018. https://www.usenix.org/system/files/osdi18-maricq.pdf
+- [C] AWS bare-metal instance prices (third-party, unverified): https://calculator.holori.com/aws/ec2/c5.metal/us-east-1 , https://cloudprice.net/aws/ec2/instances/c6i.metal , https://www.doit.com/compute/spot/us-east-1/c7i.xlarge
+- [owner] Host evidence pack (sanitized): docs/evidence/host-pack-2026-11-09.md

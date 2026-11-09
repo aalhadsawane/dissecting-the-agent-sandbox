@@ -41,6 +41,8 @@ They diverge for VMs: a virtio kick returns fast (ioeventfd), the VMM thread doe
 | **IRQ** interrupts / IPI | n/a | n/a | exits | external-interrupt exits, IPI exits, posted-interrupt support varies | same |
 | **OTH** other | — | — | — | CPUID, I/O port, MSR misc | same |
 
+**Handler locus (added 2026-11-09, `12` §5).** Every VM-exit class is further tagged `KERNEL-handled` (EPT violation, HLT, in-kernel APIC/timer, ioeventfd doorbell) or `USERSPACE-handled` (exit returned to the VMM or, for gVisor-KVM, to the `runsc` process). Reason: on HOST-A the kernel issues IBPB before the first return to userspace after a VM exit (VMScape mitigation), so `C_c` for USERSPACE-handled exits depends on the mitigation state, and KERNEL-handled exits do not. Reported as separate sub-columns, never merged.
+
 Notes:
 - "n/a (native)" means the event exists but is the **reference path**; its cost is counted in demand `D`, not in boundary cost.
 - KVM exit-reason → class mapping must be written per vendor (Intel VMX exit reasons ≠ AMD SVM exit codes). **Verify** on the actual host CPU.
@@ -124,8 +126,12 @@ Why this shape:
                     virtiofsd (Kata, if placed in sandbox cgroup)        [verify config]
                     app processes (runc)
    kernel threads NOT in P_S by default:
-                    vhost workers — since Linux 6.4 these are vhost_tasks owned by the
-                    VMM process [verify for pinned kernel]; older kernels: kthreads → mis-attributed
+                    vhost workers — CORRECTED 2026-11-09 (docs/12 §2): on v5.15 the worker is a
+                    kthread that is moved into the owner's cgroups via cgroup_attach_task_all()
+                    at SET_OWNER [kernel source], so it IS attributable if the cgroup exists
+                    BEFORE the VMM opens the vhost device [inference; test]. Since 6.4 it is a
+                    vhost_task owned by the VMM process. Firecracker does not use vhost
+                    [to verify in pinned source]; matters only for Kata-QEMU (optional row).
                     kworkers / softirq (network RX, block completion) → attribute by device ownership
 ```
 

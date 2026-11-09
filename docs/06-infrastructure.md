@@ -9,9 +9,13 @@
 
 ---
 
-## 1. Home server (primary)
+## 1. Home server (primary) — ANSWERED 2026-11-09; analysis in `12-host-platform-analysis.md`
 
-Needed from owner before week 1 (blocking):
+Facts (owner-reported, `docs/evidence/host-pack-2026-11-09.md`): bare metal, Intel i7-12700 (hybrid 8P+4E, SMT on, VMX/EPT, invariant TSC), 128 GiB non-ECC DDR5-4800, Ubuntu 22.04.5, kernel 5.15.0-190 (reboot already pending), turbo on / `powersave`, C-states limited to C1/C2 (CFG-locked), CPU 2 isolated at boot, **shared with 33 sessions from 5 other accounts**, no BMC/IPMI, no TDX/SEV/IOMMU.
+
+Consequences in short: not exclusive → noise baseline + acceptance gates; hybrid → P-core pinning and designed neighbor placement; off-matrix kernel for Firecracker; VMScape IBPB mitigation active; KVM vPMU disabled on hybrid; CVM row closed; BIOS knobs unreachable (runtime knobs only, need consent).
+
+Original request list (kept for the record; all answered except the follow-ups in `12` §9):
 
 | Item | Why it matters |
 |---|---|
@@ -19,7 +23,7 @@ Needed from owner before week 1 (blocking):
 | `vmx`/`svm`, `ept`/`npt`, `constant_tsc`, `nonstop_tsc`, posted interrupts / APICv / AVIC | exit costs and clock correlation |
 | RAM size | tmpfs budget + co-tenant density for O5 |
 | BIOS access (C-states, turbo, SMT) | pinning (invariant 3) |
-| Distro + ability to install a custom/pinned kernel | eBPF features, vhost_task attribution (≥ 6.4) |
+| Distro + ability to install a custom/pinned kernel | eBPF features; (vhost_task ≥ 6.4 claim withdrawn, see `12` §2) |
 | Noise: other services, shared use, thermal behavior | overnight sweeps (Q4) |
 | Remote access method | runs while owner is away |
 

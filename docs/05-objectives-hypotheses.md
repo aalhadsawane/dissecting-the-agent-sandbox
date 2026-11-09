@@ -65,6 +65,15 @@ Notation: `r` runtime, `w` workload, `D/A/C/η/R` from `03-unit-of-account.md`.
 - **Disconfirmed if:** the gap persists.
 - **Prior:** moderate. VEE'20 itself attributes Firecracker's write speed to skipping write-back.
 
+## H-M (new, 2026-11-09, exploratory) — mitigation state changes unit costs for userspace-handled exits only
+
+- **Background:** on HOST-A the kernel issues IBPB before the first exit to userspace after a VM exit (VMScape; kernel doc). It is not issued if userspace did not run between exit and re-entry.
+- **Statistic:** `C_c` (host time per HSE) for `USERSPACE-handled` vs `KERNEL-handled` exit classes, per runtime, under `vmscape=ibpb` vs `vmscape=off`.
+- **Claim:** `C` of USERSPACE-handled classes rises materially (threshold to be fixed after the week-1 pilot) while KERNEL-handled `C` does not; gVisor-KVM host calls behave like USERSPACE-handled exits.
+- **Disconfirmed if:** no class shows a difference outside bootstrap CIs, or KERNEL-handled classes change too (would indicate a different cause).
+- **Feasibility:** needs a boot-parameter change → only with admin consent, preferably on AWS metal where we are the only tenant (Ice Lake-class parts are listed as not vulnerable, so choose a part that is). Otherwise reported as an unquantified caveat.
+- **Prior:** moderate; the mechanism is documented, the magnitude is unknown (kernel doc gives no numbers).
+
 ## H-6 (from O5) — tail latency under co-tenancy
 
 - **Setup:** one measured sandbox + N ∈ {0, 1, 2, 4, 8, …up to RAM limit} neighbors, neighbor types from a fixed set (CPU-bound, syscall-heavy, I/O-heavy, memory-bandwidth, idle-live).
@@ -73,6 +82,7 @@ Notation: `r` runtime, `w` workload, `D/A/C/η/R` from `03-unit-of-account.md`.
 - **Claim:** (b) beats (a) on both metrics with non-overlapping CIs.
 - **Disconfirmed if:** not.
 - **Risk:** probe overhead on neighbors distorts tails (Craun et al.); T1 counters only, overhead measured with probes on/off.
+- **Placement sub-hypothesis (2026-11-09):** neighbor placement is a designed factor on the hybrid host: same-core SMT sibling, different P-core, E-core. Claim: p99 inflation orders SMT-sibling > P-core > E-core for CPU- and syscall-bound neighbors, and the order changes for memory-bandwidth neighbors. Disconfirmed if the order is the same for all neighbor types.
 - **Prior art (round 2):** DSec (arXiv:2609.22978) already reports +45.2% latency-sensitive step latency at 50% best-effort load, and +17.3% with SCHED_IDLE + core scheduling. H-6 differs by attributing the interference to host-serviced-event classes and by adding memory-pressure neighbors. Memory, not CPU, bounds density (AgentCgroup).
 
 ## H-F (new) — folk-number audit
